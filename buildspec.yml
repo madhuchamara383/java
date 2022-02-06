@@ -1,9 +1,16 @@
 version: 0.2
 
+env:
+  parameter-store:
+    SONARQUBE_TOKEN: "b666b42e2f62383489679bcb1530ec303edd15a1"
+    SONARQUBE_ENDPOINT: "http://20.115.115.202:9000"
 
 phases:
   pre_build:
     commands:
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
+      - unzip sonar-scanner-cli-3.3.0.1492-linux.zip
+      - export PATH=$PATH:./sonar-scanner-3.3.0.1492-linux/bin/
       - mvn clean install
       - echo Logging in to Amazon ECR...
       - aws --version
@@ -13,6 +20,8 @@ phases:
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
+      - echo sonar scanning...
+      - sonar-scanner
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
